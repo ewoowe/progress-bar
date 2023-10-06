@@ -126,7 +126,7 @@ public class Stage {
         }
     }
 
-    private void calculateTreeProgressVector(Stage subStage) throws ProgressBarException {
+    private void calculateTreeProgressVector(Stage subStage) {
         if (subStage.getProgressVector().get() > 0) {
             treeProgressVector.addAndGet(subStage.getProgressVector().get());
             if (parentStage != null)
@@ -142,8 +142,12 @@ public class Stage {
         synchronized (progressBar) {
             if (stageState != StageState.Initial)
                 throw new ProgressBarException("stage was completed, can not done again");
-            if (parentStage != null && parentStage.getStageState() != StageState.Done)
-                throw new ProgressBarException("parentStage not complete or fail or cancel, subStage can not done now");
+            if (parentStage != null && parentStage.getStageState() == StageState.Initial)
+                throw new ProgressBarException("parentStage not complete, subStage can not done now");
+            if (parentStage != null && parentStage.getStageState() == StageState.Fail)
+                throw new ProgressBarException("parentStage was failed, subStage can not done");
+            if (parentStage != null && parentStage.getStageState() == StageState.Cancel)
+                throw new ProgressBarException("parentStage was canceled, subStage can not done");
             stageState = StageState.Done;
             progressBar.notifyStageDone(this);
         }
@@ -157,9 +161,7 @@ public class Stage {
     public List<Stage> getTreeSubStages() {
         List<Stage> stages = new ArrayList<>();
         stages.add(this);
-        subStages.forEach(subStage -> {
-            stages.addAll(subStage.getTreeSubStages());
-        });
+        subStages.forEach(subStage -> stages.addAll(subStage.getTreeSubStages()));
         return stages;
     }
 
@@ -171,8 +173,12 @@ public class Stage {
         synchronized (progressBar) {
             if (stageState != StageState.Initial)
                 throw new ProgressBarException("stage was completed, can not fail again");
-            if (parentStage != null && parentStage.getStageState() != StageState.Done)
-                throw new ProgressBarException("parentStage not complete or fail or cancel, subStage can not fail now");
+            if (parentStage != null && parentStage.getStageState() == StageState.Initial)
+                throw new ProgressBarException("parentStage not complete, subStage can not fail now");
+            if (parentStage != null && parentStage.getStageState() == StageState.Fail)
+                throw new ProgressBarException("parentStage was failed, subStage can not fail");
+            if (parentStage != null && parentStage.getStageState() == StageState.Cancel)
+                throw new ProgressBarException("parentStage was canceled, subStage can not fail");
             stageState = StageState.Fail;
             subStages.forEach(Stage::cancel);
             progressBar.notifyStageFail(this);
