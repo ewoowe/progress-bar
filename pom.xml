@@ -6,7 +6,7 @@
 
   <groupId>com.github.ewoowe</groupId>
   <artifactId>progress-bar</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>1.0</version>
 
   <name>progress-bar</name>
   <!-- FIXME change it to the project's website -->
@@ -22,7 +22,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.11</version>
+      <version>4.13.2</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
